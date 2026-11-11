@@ -26,7 +26,6 @@ import { decideRoute, type ModelIdentity, type RouteDecision } from "./gate.ts";
 const ENV_SEARXNG = "SEARXNG_BASE_URL";
 /** Marks SEARXNG_BASE_URL as ours, so a child pi that inherits it replaces it. */
 const ENV_OWN = "PI_CLAUDE_WEB_SEARCH_URL";
-const STATUS_KEY = "claude-web-search";
 
 interface Stats {
 	searches: number;
@@ -80,11 +79,6 @@ export default function claudeWebSearch(pi: ExtensionAPI) {
 			if (process.env[ENV_OWN] === own) delete process.env[ENV_OWN];
 		}
 		debugLog({ kind: "route", model: chatModel, ...decision });
-	}
-
-	function updateStatus(ctx: ExtensionContext): void {
-		// Shown in the footer so it is clear which backend web_search will use.
-		if (ctx.hasUI) ctx.ui.setStatus(STATUS_KEY, server && decision.route ? "search: anthropic" : undefined);
 	}
 
 	/**
@@ -215,7 +209,6 @@ export default function claudeWebSearch(pi: ExtensionAPI) {
 		} catch (error) {
 			inactiveReason = `failed to start: ${error instanceof Error ? error.message : String(error)}`;
 		}
-		updateStatus(ctx);
 		if (ctx.hasUI) {
 			if (warning) ctx.ui.notify(`claude-web-search: ${warning}`, "warning");
 			if (inactiveReason && config.enabled) ctx.ui.notify(`claude-web-search: ${inactiveReason}`, "warning");
@@ -223,10 +216,9 @@ export default function claudeWebSearch(pi: ExtensionAPI) {
 	});
 
 	// Restoring a session does not fire model_select; session_start reads ctx.model.
-	pi.on("model_select", (event, ctx) => {
+	pi.on("model_select", (event) => {
 		chatModel = { provider: event.model.provider, id: event.model.id };
 		applyRoute();
-		updateStatus(ctx);
 	});
 
 	pi.on("session_shutdown", async () => {
@@ -241,7 +233,6 @@ export default function claudeWebSearch(pi: ExtensionAPI) {
 				await stop();
 				reloadConfig();
 				await start(ctx);
-				updateStatus(ctx);
 				ctx.ui.notify(statusLines().join("\n"), "info");
 				return;
 			}

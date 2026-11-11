@@ -1,0 +1,33 @@
+{
+  "name": "pi-claude-web-search",
+  "version": "0.1.0",
+  "description": "Serves pi-web-access's web_search through Anthropic's server-side web search (web_search_20250305), using the Claude subscription that pi-anthropic-auth already signs requests for.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "anthropic",
+    "web-search"
+  ],
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test \"test/*.test.ts\""
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ],
+    "changelogPath": ""
+  }
+}
